@@ -71,6 +71,13 @@
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
+  function clearInput() {
+    inputSql = '';
+    if (inputTextarea) {
+      inputTextarea.style.height = 'auto';
+    }
+  }
+
   let outputContainer: HTMLPreElement;
   let inputTextarea: HTMLTextAreaElement;
 
@@ -98,6 +105,9 @@
         bind:this={inputTextarea}
         on:input={() => adjustTextareaHeight(inputTextarea)}
       ></textarea>
+      <button class="clear-button" on:click={clearInput}>
+        クリア
+      </button>
     </div>
 
     <div class="editor">
@@ -204,6 +214,23 @@
     background-color: #34495e;
   }
 
+  .clear-button {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .clear-button:hover {
+    background-color: #c0392b;
+  }
+
   @media (max-width: 1280px) {
     .editor-container {
       grid-template-columns: 1fr;
@@ -214,6 +241,11 @@
     }
 
     .copy-button {
+      bottom: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .clear-button {
       bottom: 0.5rem;
       right: 0.5rem;
     }
