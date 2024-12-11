@@ -3,6 +3,7 @@
   import hljs from 'highlight.js/lib/core';
   import sql from 'highlight.js/lib/languages/sql';
   import 'highlight.js/styles/atom-one-dark.css';
+  import { fade } from 'svelte/transition';
 
   // highlight.jsにSQLを登録
   hljs.registerLanguage('sql', sql);
@@ -62,8 +63,14 @@
     }
   }
 
+  let showToast = false;
+
   function copyToClipboard() {
     navigator.clipboard.writeText(outputSql);
+    showToast = true;
+    setTimeout(() => {
+      showToast = false;
+    }, 3000);
   }
 
   function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
@@ -121,6 +128,12 @@
     </div>
   </div>
 </div>
+
+{#if showToast}
+  <div class="toast" transition:fade>
+    コピーしました！
+  </div>
+{/if}
 
 <style>
   .formatter {
@@ -254,5 +267,41 @@
   :global(.hljs) {
     background: transparent !important;
     padding: 0 !important;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2ecc71;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+
+  /* アニメーション用のトランジション */
+  :global(.toast-enter) {
+    opacity: 0;
+    transform: translate(-50%, 1rem);
+  }
+
+  :global(.toast-enter-active) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition: all 0.2s ease-out;
+  }
+
+  :global(.toast-exit) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  :global(.toast-exit-active) {
+    opacity: 0;
+    transform: translate(-50%, 1rem);
+    transition: all 0.2s ease-in;
   }
 </style> 
