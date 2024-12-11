@@ -21,6 +21,14 @@
   }
 
   main {
-    margin-top: calc(var(--header-height) + 16px);
+    max-width: 1280px;
+    margin: calc(var(--header-height) + 16px) auto 0;
+    padding: 0 24px;
+  }
+
+  @media (max-width: 768px) {
+    main {
+      padding: 0 16px;
+    }
   }
 </style>

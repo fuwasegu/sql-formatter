@@ -1,32 +1,45 @@
-<script>
+<script lang="ts">
   import { format } from 'sql-formatter';
+
+  type Dialect = 'sql' | 'mysql' | 'postgresql' | 'sqlite' | 'bigquery' | 'db2' | 'hive' | 'mariadb' | 'n1ql' | 'plsql' | 'redshift' | 'spark' | 'tsql';
 
   let inputSql = '';
   let outputSql = '';
-  let selectedDialect = 'mysql';
+  let selectedDialect: Dialect = 'sql';
   
   const dialects = [
-    { value: 'mysql', label: 'MySQL' },
-    { value: 'postgresql', label: 'PostgreSQL' },
-    { value: 'sqlite', label: 'SQLite' },
-    { value: 'bigquery', label: 'BigQuery' },
-    { value: 'db2', label: 'DB2' },
-    { value: 'hive', label: 'Hive' },
-    { value: 'mariadb', label: 'MariaDB' },
-    { value: 'n1ql', label: 'N1QL' },
-    { value: 'plsql', label: 'PL/SQL' },
-    { value: 'redshift', label: 'Redshift' },
-    { value: 'spark', label: 'Spark' },
-    { value: 'tsql', label: 'T-SQL' }
+    { value: 'sql' as const, label: 'Standard SQL' },
+    { value: 'mysql' as const, label: 'MySQL' },
+    { value: 'postgresql' as const, label: 'PostgreSQL' },
+    { value: 'sqlite' as const, label: 'SQLite' },
+    { value: 'bigquery' as const, label: 'BigQuery' },
+    { value: 'db2' as const, label: 'DB2' },
+    { value: 'hive' as const, label: 'Hive' },
+    { value: 'mariadb' as const, label: 'MariaDB' },
+    { value: 'n1ql' as const, label: 'N1QL' },
+    { value: 'plsql' as const, label: 'PL/SQL' },
+    { value: 'redshift' as const, label: 'Redshift' },
+    { value: 'spark' as const, label: 'Spark' },
+    { value: 'tsql' as const, label: 'T-SQL' }
   ];
 
   function formatSql() {
+    if (!inputSql) {
+      outputSql = '';
+      return;
+    }
+    
     try {
       outputSql = format(inputSql, {
         language: selectedDialect,
-        uppercase: true
+        keywordCase: 'upper',
+        tabWidth: 2
       });
+      setTimeout(() => {
+        if (outputTextarea) adjustTextareaHeight(outputTextarea);
+      }, 0);
     } catch (error) {
+      console.error('Format error:', error);
       outputSql = `Error: ${error.message}`;
     }
   }
@@ -35,11 +48,23 @@
     navigator.clipboard.writeText(outputSql);
   }
 
-  $: {
-    if (inputSql) {
-      formatSql();
-    }
+  function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
+    textarea.style.height = '0';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }
+
+  let outputTextarea: HTMLTextAreaElement;
+  let inputTextarea: HTMLTextAreaElement;
+
+  $: if (inputTextarea && inputSql) {
+    setTimeout(() => adjustTextareaHeight(inputTextarea), 0);
+  }
+
+  $: if (outputTextarea && outputSql) {
+    setTimeout(() => adjustTextareaHeight(outputTextarea), 0);
+  }
+
+  $: inputSql, selectedDialect, formatSql();
 </script>
 
 <div class="formatter">
@@ -56,6 +81,8 @@
       <textarea
         placeholder="ここにSQLを入力してください..."
         bind:value={inputSql}
+        bind:this={inputTextarea}
+        on:input={() => adjustTextareaHeight(inputTextarea)}
       ></textarea>
     </div>
 
@@ -63,6 +90,8 @@
       <textarea
         placeholder="フォーマット後のSQLがここに表示されます..."
         bind:value={outputSql}
+        bind:this={outputTextarea}
+        on:input={() => adjustTextareaHeight(outputTextarea)}
       ></textarea>
       <button class="copy-button" on:click={copyToClipboard}>
         クリップボードにコピー
@@ -87,9 +116,15 @@
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
-    background-color: white;
+    background-color: #282c34;
+    color: #abb2bf;
     font-size: 1rem;
     width: 200px;
+  }
+
+  select option {
+    background-color: #282c34;
+    color: #abb2bf;
   }
 
   .editor-container {
@@ -104,17 +139,22 @@
 
   textarea {
     width: 100%;
-    height: 300px;
+    min-height: 300px;
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
     font-size: 14px;
     line-height: 1.5;
-    resize: vertical;
+    resize: none;
     box-sizing: border-box;
-    background-color: #1e1e1e;
-    color: #fff;
+    background-color: #282c34;
+    color: #abb2bf;
+    overflow-y: hidden;
+  }
+
+  textarea::placeholder {
+    color: #6b727b;
   }
 
   .copy-button {
@@ -134,13 +174,13 @@
     background-color: #34495e;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1280px) {
     .editor-container {
       grid-template-columns: 1fr;
     }
 
     textarea {
-      height: 250px;
+      min-height: 250px;
     }
 
     .copy-button {

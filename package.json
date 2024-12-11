@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "sql-formatter": "^12.2.4"
+    "sql-formatter": "^15.4.6"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
