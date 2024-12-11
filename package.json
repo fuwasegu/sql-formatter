@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "highlight.js": "^11.10.0",
     "sql-formatter": "^15.4.6"
   },
   "devDependencies": {

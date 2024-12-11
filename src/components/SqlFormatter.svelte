@@ -1,5 +1,11 @@
 <script lang="ts">
   import { format } from 'sql-formatter';
+  import hljs from 'highlight.js/lib/core';
+  import sql from 'highlight.js/lib/languages/sql';
+  import 'highlight.js/styles/atom-one-dark.css';
+
+  // highlight.jsにSQLを登録
+  hljs.registerLanguage('sql', sql);
 
   type Dialect = 'sql' | 'mysql' | 'postgresql' | 'sqlite' | 'bigquery' | 'db2' | 'hive' | 'mariadb' | 'n1ql' | 'plsql' | 'redshift' | 'spark' | 'tsql';
 
@@ -26,6 +32,9 @@
   function formatSql() {
     if (!inputSql) {
       outputSql = '';
+      if (outputContainer) {
+        outputContainer.innerHTML = '';
+      }
       return;
     }
     
@@ -35,12 +44,21 @@
         keywordCase: 'upper',
         tabWidth: 2
       });
-      setTimeout(() => {
-        if (outputTextarea) adjustTextareaHeight(outputTextarea);
-      }, 0);
+      
+      // フォーマット後のSQLをハイライト
+      const highlightedCode = hljs.highlight(outputSql, { language: 'sql' }).value;
+      
+      // ハイライトされたHTMLを表示エリアに設定
+      if (outputContainer) {
+        outputContainer.innerHTML = highlightedCode;
+      }
+
     } catch (error) {
       console.error('Format error:', error);
       outputSql = `Error: ${error.message}`;
+      if (outputContainer) {
+        outputContainer.textContent = outputSql;
+      }
     }
   }
 
@@ -53,15 +71,11 @@
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
-  let outputTextarea: HTMLTextAreaElement;
+  let outputContainer: HTMLPreElement;
   let inputTextarea: HTMLTextAreaElement;
 
   $: if (inputTextarea && inputSql) {
     setTimeout(() => adjustTextareaHeight(inputTextarea), 0);
-  }
-
-  $: if (outputTextarea && outputSql) {
-    setTimeout(() => adjustTextareaHeight(outputTextarea), 0);
   }
 
   $: inputSql, selectedDialect, formatSql();
@@ -87,12 +101,10 @@
     </div>
 
     <div class="editor">
-      <textarea
-        placeholder="フォーマット後のSQLがここに表示されます..."
-        bind:value={outputSql}
-        bind:this={outputTextarea}
-        on:input={() => adjustTextareaHeight(outputTextarea)}
-      ></textarea>
+      <pre
+        class="output-pre"
+        bind:this={outputContainer}
+      ><code></code></pre>
       <button class="copy-button" on:click={copyToClipboard}>
         クリップボードにコピー
       </button>
@@ -157,6 +169,24 @@
     color: #6b727b;
   }
 
+  .output-pre {
+    width: 100%;
+    min-height: 300px;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    background-color: #282c34;
+    color: #abb2bf;
+    overflow-y: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    text-align: left;
+  }
+
   .copy-button {
     position: absolute;
     bottom: 1rem;
@@ -179,7 +209,7 @@
       grid-template-columns: 1fr;
     }
 
-    textarea {
+    textarea, .output-pre {
       min-height: 250px;
     }
 
@@ -187,5 +217,10 @@
       bottom: 0.5rem;
       right: 0.5rem;
     }
+  }
+
+  :global(.hljs) {
+    background: transparent !important;
+    padding: 0 !important;
   }
 </style> 
